@@ -1,0 +1,20 @@
+{
+  "name": "gissue-1356",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --timeout 0"
+  },
+  "keywords": [],
+  "author": "Stephen Sawchuk <sawchuk@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.0.0-rc.5",
+    "gcloud": "^0.35.0",
+    "methmeth": "^1.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  }
+}
