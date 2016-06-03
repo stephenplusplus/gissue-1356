@@ -17,11 +17,11 @@ var USE_GCLOUD = process.env.USE_GCLOUD;
 
 var NUM_TOPICS_TO_CREATE = 40;
 var NUM_PUBLISH_THREADS = 50;
-var NUM_MESSAGES_TO_PUBLISH_PER_THREAD = 500;
+var NUM_MESSAGES_TO_PUBLISH_PER_THREAD = 1000;
 var MEMORY_WATCH_INTERVAL_MS = 10000;
 var TEST_TOPIC_PREFIX = 'GCLOUD_NODE_ISSUE_1356_';
 
-var AUTH = {
+var CFG = {
     // keyFilename: '/path/to/key.json',
     //
     // // or...
@@ -34,7 +34,8 @@ var AUTH = {
 };
 
 var chance = new Chance();
-var pubsub = gcloud.pubsub(AUTH);
+var pubsub = gcloud.pubsub(CFG);
+pubsub.maxRetries = 0;
 
 var topicNames = [];
 var gcloudTopics = {};
@@ -65,7 +66,7 @@ async.series([
 function createGrpcService(callback) {
     if (USE_GCLOUD) return callback();
 
-    googleAuth(AUTH).getAuthClient(function(err, authClient) {
+    googleAuth(CFG).getAuthClient(function(err, authClient) {
         if (err) throw err;
 
         var proto = grpc.load({
@@ -120,12 +121,18 @@ function publishToRandomTopic(callback) {
 
             if (USE_GCLOUD) {
                 var topic = gcloudTopics[randomTopicName];
-                topic.publish({ data: 'data' }, next);
+                topic.publish({ data: 'data' }, function() {
+                    // Ignore errors.
+                    next();
+                });
             } else {
                 publisherService.publish({
                     topic: randomTopicName,
                     messages: [{ data: new Buffer('data').toString('base64') }]
-                }, next);
+                }, function() {
+                    // Ignore errors.
+                    next();
+                });
             }
         }, threadDone);
     }, callback);
